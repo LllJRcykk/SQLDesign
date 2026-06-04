@@ -1,40 +1,51 @@
 # -*- coding: utf-8 -*-
 """员工实体类"""
 
-class Employee:
-    def __init__(self, eid='', ename='', epas='', elevel='', etel_phone='', esalary=0.0, other=''):
-        self.eid = eid              # 员工编号
-        self.ename = ename          # 员工姓名
-        self.epas = epas            # 登录密码
-        self.elevel = elevel        # 员工级别
-        self.etel_phone = etel_phone  # 员工电话
-        self.esalary = esalary      # 员工工资
-        self.other = other          # 备注
+from dataclasses import dataclass
+from typing import Optional
+from models.base import BaseEntity
+
+@dataclass
+class Employee(BaseEntity):
+    """员工实体"""
+    eid: str = ''                    # 员工编号 (主键)
+    ename: str = ''                  # 员工姓名
+    epas: str = ''                   # 登录密码
+    elevel: str = ''                 # 员工级别 (00/10/20)
+    etel_phone: str = ''             # 员工电话
+    esalary: float = 0.0             # 员工工资
+    other: str = ''                  # 备注
     
-    def __str__(self):
-        return f"员工[{self.eid}]: {self.ename}, 级别:{self.elevel}, 工资:{self.esalary}"
+    # 级别常量
+    LEVEL_ADMIN = '00'       # 管理员
+    LEVEL_MANAGER = '10'     # 主管
+    LEVEL_ORDINARY = '20'    # 采购员
     
-    def to_dict(self):
-        """转换为字典，方便前端使用"""
-        return {
-            'eid': self.eid,
-            'ename': self.ename,
-            'epas': self.epas,
-            'elevel': self.elevel,
-            'etel_phone': self.etel_phone,
-            'esalary': self.esalary,
-            'other': self.other
+    def get_level_name(self) -> str:
+        """获取级别中文名称"""
+        level_map = {
+            self.LEVEL_ADMIN: '管理员',
+            self.LEVEL_MANAGER: '主管',
+            self.LEVEL_ORDINARY: '采购员'
         }
+        return level_map.get(self.elevel, '未知')
     
-    @staticmethod
-    def from_dict(data):
-        """从字典创建对象"""
-        return Employee(
-            eid=data.get('eid', ''),
-            ename=data.get('ename', ''),
-            epas=data.get('epas', ''),
-            elevel=data.get('elevel', ''),
-            etel_phone=data.get('etel_phone', ''),
-            esalary=data.get('esalary', 0.0),
-            other=data.get('other', '')
-        )
+    def is_admin(self) -> bool:
+        """判断是否为管理员"""
+        return self.elevel == self.LEVEL_ADMIN
+    
+    def validate(self) -> tuple[bool, str]:
+        """数据验证"""
+        if not self.eid:
+            return False, "员工编号不能为空"
+        if not self.eid.startswith('yg'):
+            return False, "员工编号必须以 yg 开头"
+        if not self.ename:
+            return False, "员工姓名不能为空"
+        if not self.epas:
+            return False, "密码不能为空"
+        if self.elevel not in [self.LEVEL_ADMIN, self.LEVEL_MANAGER, self.LEVEL_ORDINARY]:
+            return False, "员工级别必须是 00/10/20"
+        if len(self.etel_phone) != 11:
+            return False, "手机号必须是 11 位"
+        return True, "验证通过"

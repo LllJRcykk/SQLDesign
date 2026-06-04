@@ -1,11 +1,28 @@
 # -*- coding: utf-8 -*-
 """数据库配置文件"""
 
-DB_CONFIG = {
-    'host': 'localhost',
-    'port': 3306,
-    'user': 'root',
-    'password': '123456',  # 修改为你的 MySQL 密码
-    'database': 'supermarket',
-    'charset': 'utf8mb4'
-}
+from dataclasses import dataclass
+
+@dataclass
+class DatabaseConfig:
+    """数据库配置数据类"""
+    host: str = 'localhost'
+    port: int = 3306
+    user: str = 'root'
+    password: str = '123456'
+    database: str = 'supermarket'
+    charset: str = 'utf8mb4'
+    
+    def to_dict(self) -> dict:
+        """转换为字典格式，供 pymysql 使用"""
+        return {
+            'host': self.host,
+            'port': self.port,
+            'user': self.user,
+            'password': self.password,
+            'database': self.database,
+            'charset': self.charset
+        }
+
+# 全局配置实例
+DB_CONFIG = DatabaseConfig()
