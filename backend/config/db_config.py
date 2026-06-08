@@ -2,7 +2,7 @@
 """数据库配置文件"""
 
 from dataclasses import dataclass
-
+import pymysql
 @dataclass
 class DatabaseConfig:
     """数据库配置数据类"""
@@ -10,7 +10,7 @@ class DatabaseConfig:
     port: int = 3306
     user: str = 'root'
     password: str = '123456'
-    database: str = 'supermarket'
+    database: str = 'design'
     charset: str = 'utf8mb4'
     
     def to_dict(self) -> dict:
@@ -21,7 +21,9 @@ class DatabaseConfig:
             'user': self.user,
             'password': self.password,
             'database': self.database,
-            'charset': self.charset
+            'charset': self.charset,
+            'cursorclass': pymysql.cursors.DictCursor,  # 结果以字典形式返回
+            'autocommit': False  # 自动提交事务
         }
 
 # 全局配置实例
