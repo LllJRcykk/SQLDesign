@@ -22,8 +22,8 @@ class DatabaseConfig:
             'password': self.password,
             'database': self.database,
             'charset': self.charset,
-            'cursorclass': pymysql.cursors.DictCursor,  # 结果以字典形式返回
-            'autocommit': False  # 自动提交事务
+            'cursorclass': pymysql.cursors.DictCursor,  # 使用字典游标
+            'autocommit': False
         }
 
 # 全局配置实例
