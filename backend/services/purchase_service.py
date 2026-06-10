@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """采购业务逻辑层"""
 
+import os
 from dao.employee_dao import EmployeeDAO
 from dao.good_dao import GoodDAO
 from dao.pay_main_dao import PayMainDAO
@@ -8,6 +9,7 @@ from dao.pay_detail_dao import PayDetailDAO
 
 from models.pay_main import PayMain
 from models.pay_detail import PayDetail
+from utils.csv_exporter import CSVExporter
 
 
 class PurchaseService:
@@ -20,7 +22,6 @@ class PurchaseService:
         self.pay_detail_dao = PayDetailDAO()
 
     def create_pay_main(self, pay_main: PayMain) -> tuple[bool, str, int | None]:
-        """创建采购主表"""
         valid, msg = pay_main.validate()
         if not valid:
             return False, msg, None
@@ -36,7 +37,6 @@ class PurchaseService:
             return False, f"采购主表新增失败：{e}", None
 
     def update_pay_main(self, pay_main: PayMain) -> tuple[bool, str]:
-        """修改采购主表"""
         valid, msg = pay_main.validate()
         if not valid:
             return False, msg
@@ -56,9 +56,6 @@ class PurchaseService:
             return False, f"采购主表修改失败：{e}"
 
     def delete_pay_main(self, pid: int) -> tuple[bool, str]:
-        """删除采购主表
-        如果数据库外键设置了 ON DELETE CASCADE，则明细会自动删除
-        """
         old = self.pay_main_dao.get_by_id(pid)
         if not old:
             return False, f"采购单号 {pid} 不存在"
@@ -70,7 +67,6 @@ class PurchaseService:
             return False, f"采购主表删除失败：{e}"
 
     def add_pay_detail(self, detail: PayDetail) -> tuple[bool, str, int | None]:
-        """新增采购明细，并自动刷新主表汇总"""
         if detail.total <= 0:
             detail.calculate_total()
 
@@ -86,7 +82,6 @@ class PurchaseService:
         if not good:
             return False, f"商品编号 {detail.gid} 不存在", None
 
-        # 如果明细单价未给或不合理，可直接采用商品表单价
         if detail.gpay <= 0:
             detail.gpay = float(good.gpay)
             detail.calculate_total()
@@ -98,7 +93,6 @@ class PurchaseService:
             return False, f"采购明细新增失败：{e}", None
 
     def update_pay_detail(self, detail: PayDetail) -> tuple[bool, str]:
-        """修改采购明细，并自动刷新主表汇总"""
         old = self.pay_detail_dao.get_by_id(detail.pdid)
         if not old:
             return False, f"采购明细号 {detail.pdid} 不存在"
@@ -125,7 +119,6 @@ class PurchaseService:
             return False, f"采购明细修改失败：{e}"
 
     def delete_pay_detail(self, pdid: int) -> tuple[bool, str]:
-        """删除采购明细，并自动刷新主表汇总"""
         old = self.pay_detail_dao.get_by_id(pdid)
         if not old:
             return False, f"采购明细号 {pdid} 不存在"
@@ -137,31 +130,24 @@ class PurchaseService:
             return False, f"采购明细删除失败：{e}"
 
     def get_pay_main_by_id(self, pid: int):
-        """按主键查询采购主表"""
         return self.pay_main_dao.get_by_id(pid)
 
     def get_all_pay_main(self):
-        """查询全部采购主表"""
         return self.pay_main_dao.get_all()
 
     def get_pay_detail_by_id(self, pdid: int):
-        """按主键查询采购明细"""
         return self.pay_detail_dao.get_by_id(pdid)
 
     def get_details_by_pid(self, pid: int):
-        """查询某采购单下全部明细"""
         return self.pay_detail_dao.get_by_pid(pid)
 
     def search_pay_main_by_date(self, pdate: str):
-        """按日期精确查询采购主表"""
         return self.pay_main_dao.search_by_date(pdate)
 
     def search_pay_main_by_date_range(self, start_date: str, end_date: str):
-        """按日期范围查询采购主表"""
         return self.pay_main_dao.search_by_date_range(start_date, end_date)
 
     def get_pay_main_with_details(self, pid: int):
-        """获取采购主表及其明细"""
         pay_main = self.pay_main_dao.get_by_id(pid)
         if not pay_main:
             return None
@@ -169,3 +155,48 @@ class PurchaseService:
         details = self.pay_detail_dao.get_by_pid(pid)
         pay_main.details = details
         return pay_main
+
+    def export_pay_main_to_csv(self, file_path: str = 'exports/pay_main.csv') -> tuple[bool, str]:
+        """导出采购主表到 CSV"""
+        try:
+            mains = self.pay_main_dao.get_all()
+            headers = ['采购单号', '员工编号', '采购总数量', '采购总价', '采购日期', '备注']
+            rows = []
+
+            for m in mains:
+                rows.append([
+                    m.pid,
+                    m.eid,
+                    m.pcount,
+                    m.ptotal,
+                    m.pdate,
+                    m.other
+                ])
+
+            CSVExporter.export_to_csv(file_path, headers, rows)
+            return True, f"采购主表导出成功：{os.path.abspath(file_path)}"
+        except Exception as e:
+            return False, f"采购主表导出失败：{e}"
+
+    def export_pay_detail_to_csv(self, file_path: str = 'exports/pay_detail.csv') -> tuple[bool, str]:
+        """导出采购明细到 CSV"""
+        try:
+            details = self.pay_detail_dao.get_all()
+            headers = ['采购明细号', '采购单号', '商品编号', '采购数量', '商品单价', '商品总价', '备注']
+            rows = []
+
+            for d in details:
+                rows.append([
+                    d.pdid,
+                    d.pid,
+                    d.gid,
+                    d.pcount2,
+                    d.gpay,
+                    d.total,
+                    d.other
+                ])
+
+            CSVExporter.export_to_csv(file_path, headers, rows)
+            return True, f"采购明细导出成功：{os.path.abspath(file_path)}"
+        except Exception as e:
+            return False, f"采购明细导出失败：{e}"
