@@ -3,7 +3,7 @@
 
 import os
 from utils.csv_exporter import CSVExporter
-from dao.statistics_dao import StatisticsDAO
+from DAO.statistics_dao import StatisticsDAO
 
 
 class StatisticsService:

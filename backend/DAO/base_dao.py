@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """DAO 基类"""
 
-from dao.db_helper import DBHelper
+from DAO.db_helper import DBHelper
 
 
 class BaseDAO:

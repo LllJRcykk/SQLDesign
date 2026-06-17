@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """采购明细 DAO"""
 
-from dao.base_dao import BaseDAO
-from dao.db_helper import DBHelper
+from DAO.base_dao import BaseDAO
+from DAO.db_helper import DBHelper
 from models.pay_detail import PayDetail
 
 

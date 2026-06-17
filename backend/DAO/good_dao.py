@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """商品 DAO"""
 
-from dao.base_dao import BaseDAO
+from DAO.base_dao import BaseDAO
 from models.good import Good
 
 
