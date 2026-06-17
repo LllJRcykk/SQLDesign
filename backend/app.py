@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 from flask import Flask, jsonify
 from flask_cors import CORS
 
@@ -11,7 +12,9 @@ from routes.export_routes import export_bp
 
 
 def create_app():
-    app = Flask(__name__)
+    # Serve frontend static files from the sibling "frontend" directory
+    frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend'))
+    app = Flask(__name__, static_folder=frontend_dir, static_url_path='')
     CORS(app)
 
     app.register_blueprint(employee_bp, url_prefix='/api/employees')
@@ -23,11 +26,8 @@ def create_app():
 
     @app.route('/')
     def index():
-        return jsonify({
-            'success': True,
-            'msg': 'SuperMarket API is running',
-            'database': 'design'
-        })
+        # return index.html from frontend
+        return app.send_static_file('index.html')
 
     return app
 

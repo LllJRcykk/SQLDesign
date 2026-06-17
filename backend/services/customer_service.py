@@ -2,7 +2,7 @@
 """客户业务逻辑层"""
 
 import os
-from DAO.customer_dao import CustomerDAO
+from dao.customer_dao import CustomerDAO
 from DAO.good_dao import GoodDAO
 from models.customer import Customer
 from utils.csv_exporter import CSVExporter

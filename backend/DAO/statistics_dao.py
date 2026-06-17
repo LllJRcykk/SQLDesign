@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """统计查询 DAO"""
 
-from DAO.db_helper import DBHelper
+from dao.db_helper import DBHelper
 
 
 class StatisticsDAO:

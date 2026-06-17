@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """客户 DAO"""
 
-from DAO.base_dao import BaseDAO
+from dao.base_dao import BaseDAO
 from models.customer import Customer
 
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """采购主表 DAO"""
 
-from DAO.base_dao import BaseDAO
+from dao.base_dao import BaseDAO
 from models.pay_main import PayMain
 
 
